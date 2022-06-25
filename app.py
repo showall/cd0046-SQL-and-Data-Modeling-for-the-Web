@@ -20,6 +20,7 @@ import config
 import sys
 from sqlalchemy.sql import text
 import datetime
+import models
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -32,51 +33,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
-#----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-# Done: implement Venue model fields, as a database migration using Flask-Migrate
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    genres =db.Column(db.PickleType)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    website_link = db.Column(db.String(500))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String)
-
-
-# Done: implement  Artist models fields, as a database migration using Flask-Migrate
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)    
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    genres = db.Column(db.PickleType)
-    website = db.Column(db.String)
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String)
-
-
-# Implement Show table model and complete all model relationships and properties, as a database migration.
-Show = db.Table('Shows',
-    db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
-    db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
-    db.Column('start_time', db.DateTime, nullable=False)
-)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -109,7 +65,6 @@ def venues():
   data = []
   now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
   city_state = engine.execute('SELECT city,state FROM "Venue"').fetchall()
-  print(city_state)  
   for city, state in set(city_state) :
     data1 = {}
     data1["city"] = city
@@ -121,7 +76,6 @@ def venues():
       data12["id"] = row[0]
       data12["name"] = row[1]
       data12["num_upcoming_shows"] = engine.execute(f"""SELECT COUNT(*) FROM "Shows" AS S WHERE S.venue_id = {row[0]} and S.start_time > '{now}' """).fetchall()[0][0]
-      print(data12["num_upcoming_shows"])
       _.append(data12)
     data1["venues"] = _ 
     data.append(data1)
@@ -166,7 +120,6 @@ def search_venues():
     data.append(data1)
   response["count"] = len(result)
   response["data"] = data
-  print(response)
   response1={
     "count": 1,
     "data": [{
@@ -261,7 +214,6 @@ def show_venue(venue_id):
   # }
 
   data = list(filter(lambda d: d['id'] == venue_id, [data1]))[0]
-  print (data)
   return render_template('pages/show_venue.html', venue=data1)
 
 #  Create Venue
@@ -283,14 +235,12 @@ def create_venue_submission():
   error = False
   body = {}
   data1 = request.form
-  print(data1)
   try:
       venue = Venue()
       keylist=[]
       for key in data1:
         if key == "genres":
           setattr(venue, key, data1.getlist("genres"))
-          print(venue.genres)
         elif key == "seeking_talent":
           if  data1[key] == 'y':
             setattr(venue, key, True)
@@ -497,7 +447,6 @@ def edit_artist(artist_id):
     form.genres.default = row.genres
     form.process()
   # TODO: 
-  print(artist)
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 
@@ -539,7 +488,6 @@ def edit_venue(venue_id):
   form = VenueForm()
   result  =  db.session.query(Venue).filter(Venue.id == venue_id).all()
   data1 = {} 
-  print(result)
   for row in result:
     venue={
       "id": row.id,
