@@ -1,4 +1,5 @@
 from datetime import datetime
+from email.policy import default
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
 from wtforms.validators import DataRequired, AnyOf, URL
@@ -76,8 +77,8 @@ class VenueForm(Form):
             ('WA', 'WA'),
             ('WV', 'WV'),
             ('WI', 'WI'),
-            ('WY', 'WY'),
-        ]
+            ('WY', 'WY')
+        ], default=""
     )
     address = StringField(
         'address', validators=[DataRequired()]
@@ -90,7 +91,8 @@ class VenueForm(Form):
     )
     genres = SelectMultipleField(
         # TODO implement enum restriction
-        'genres', validators=[DataRequired()],
+        'genres',
+        validators=[DataRequired()],
         choices=[
             ('Alternative', 'Alternative'),
             ('Blues', 'Blues'),
@@ -111,7 +113,7 @@ class VenueForm(Form):
             ('Rock n Roll', 'Rock n Roll'),
             ('Soul', 'Soul'),
             ('Other', 'Other'),
-        ]
+        ],default="Other"
     )
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
@@ -125,8 +127,6 @@ class VenueForm(Form):
     seeking_description = StringField(
         'seeking_description'
     )
-
-
 
 class ArtistForm(Form):
     name = StringField(
@@ -189,7 +189,7 @@ class ArtistForm(Form):
             ('WV', 'WV'),
             ('WI', 'WI'),
             ('WY', 'WY'),
-        ]
+        ],default=""
     )
     phone = StringField(
         # TODO implement validation logic for state
@@ -220,7 +220,7 @@ class ArtistForm(Form):
             ('Rock n Roll', 'Rock n Roll'),
             ('Soul', 'Soul'),
             ('Other', 'Other'),
-        ]
+        ],default="Other"
      )
     facebook_link = StringField(
         # TODO implement enum restriction
